@@ -16,6 +16,7 @@ namespace Parallel
                unknown    = MPI_ERR_UNKNOWN
   };
 
+  typedef MPI_Comm Ext_Communicator; 
   typedef MPI_Request Request;
   
   template<typename K> struct Type_MPI
@@ -89,6 +90,7 @@ namespace Parallel
   const int any_source = -1; /*!< Constant to receive from any source */
   const int undefined  = -1; /*!< Constant for undefined parameter */
 
+  typedef int Ext_Communicator;
   typedef int Request;
   /*!
    * \enum error
