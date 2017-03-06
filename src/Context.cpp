@@ -60,7 +60,6 @@ Context::Context(int& nargc, char* argv[],
     std::stringstream file_name;
     file_name << "Output" << std::setfill('0') << std::setw(5) << rank << ".txt";
     pout.open(file_name.str());
-    pout << "Hello world !" << std::endl;
 }
 // .....................................................................
 Context::~Context()
