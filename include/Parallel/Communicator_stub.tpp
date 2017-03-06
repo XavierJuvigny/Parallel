@@ -62,7 +62,7 @@ namespace Parallel
         }
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        
         template<typename K> void broadcast( std::size_t nbItems, 
-                                             const K* bufsnd,d, K* bufrcv,
+                                             const K* bufsnd, K* bufrcv,
                                              int root ) const
         {
             if ( bufsnd != bufrcv )
@@ -70,13 +70,15 @@ namespace Parallel
         }
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        
         template<typename K> Request ibroadcast( std::size_t nbItems, 
-                                                 const K* bufsnd,d, K* bufrcv,
+                                                 const K* bufsnd, K* bufrcv,
                                                  int root ) const
         {
             if ( bufsnd != bufrcv )
                 std::copy_n( bufrcv, nbItems, bufsnd );
             return Request(1);
         }
+        // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+        void barrier() const {}        
         // .............................................................
     private:
         std::size_t m_nbItems;
