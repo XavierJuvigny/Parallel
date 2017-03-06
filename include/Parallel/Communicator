@@ -1,0 +1,7 @@
+#ifndef _PARALLEL_COMMUNICATOR_
+# define _PARALLEL_COMMUNICATOR_
+
+# include "Parallel/Communicator.hpp"
+# include "Parallel/Communicator.tpp"
+
+#endif

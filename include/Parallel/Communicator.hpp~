@@ -1,0 +1,43 @@
+#ifndef _PARALLEL_COMMUNICATOR_HPP_
+# define _PARALLEL_COMMUNICATOR_HPP_
+# include <vector>
+# include <cstdlib>
+# include "Parallel/Status.hpp"
+namespace Parallel
+{
+    class Communicator
+    {
+    public:
+        /// Constructeurs et destructeur
+        // Par défaut, communicateur global
+        Communicator();
+        // Pour définir des sous--communicateurs :
+        Communicator( const Communicator& com, int color, int key );
+        //
+        Communicator( const Communicator& com );
+        // Pas de déplacement... ?
+        Communicator( Communicator&& com ) = delete;
+        //
+        ~Communicator();
+        
+        /// Accesseurs et modifieurs:
+        int rank, size;
+        
+        /// Opérations de communications :
+        /// Opérations point à point :
+        template<typename K> void send( const K& obj, int dest, int tag = 0) const;
+        template<typename K> void send( const std::vector<K>& obj, int dest, int tag = 0) const;
+        template<typename K> void send( std::size_t nbObjs, const K* buff, int dest, int tag = 0) const;
+        template<typename K> K recv( int sender, int tag = 0, Status* pt_status = nullptr ) const;
+        template<typename K> void recv( std::size_t nbObjs, K* buff, int sender, 
+                                        int tag = 0, Status* pt_status = nullptr) const;
+        // Opérations collectives :
+        template<typename K> K bcast( const K& obj, int root = 0     ) const;
+        template<typename K> void bcast( std::size_t nbObjs, const K* buff, int root = 0 ) const;
+    private:
+        struct Implementation;
+        Implementation* m_impl;
+    };
+    static Communicator comm_global;
+}
+#endif

@@ -1,0 +1,97 @@
+// Constantes utilisées par le parallélisme :
+#ifndef _PARALLEL_CONSTANTES_HPP_
+# define _PARALLEL_CONSTANTES_HPP_
+namespace Parallel
+{
+# if defined (USE_MPI)
+  const int any_tag    = MPI_ANY_TAG;
+  const int any_source = MPI_ANY_SOURCE;
+
+  enum error { success    = MPI_SUCCESS,
+               count      = MPI_ERR_COUNT,
+               rank       = MPI_ERR_RANK,
+               tag        = MPI_ERR_TAG,
+               buffer     = MPI_ERR_BUFFER,
+               unknown    = MPI_ERR_UNKNOWN
+  };
+  
+  template<typename K> struct Type_MPI
+  {
+    static bool must_be_packed() { return true; }
+    static MPI_Datatype mpi_type() {return MPI_PACKED;}
+  };
+  //
+  template<> struct Type_MPI<short>
+  {
+    static bool must_be_packed() { return false; }
+    static MPI_Datatype mpi_type() { return MPI_SHORT;}
+  };
+  //
+  template<> struct Type_MPI<char>
+  {
+    static bool must_be_packed() { return false;}
+    static MPI_Datatype mpi_type() { return MPI_CHAR;}
+  };
+  //
+  template<> struct Type_MPI<int>
+  {
+    static bool must_be_packed() { return false;}
+    static MPI_Datatype mpi_type() { return MPI_INT;}
+  };
+  //
+  template<> struct Type_MPI<long>
+  {
+    static bool must_be_packed() { return false;}
+    static MPI_Datatype mpi_type() { return MPI_LONG;}
+  };
+  //
+  template<> struct Type_MPI<float>
+  {
+    static bool must_be_packed { return false;}
+	static MPI_Datatype mpi_type() { return MPI_FLOAT; }
+  };
+        //
+        template<> struct Type_MPI<double>
+        {
+        	bool must_be_packed() { return false; }
+        	MPI_Datatype mpi_type() { return MPI_DOUBLE; }
+        };
+        //
+        template<> struct Type_MPI<unsigned char>
+        {
+            bool must_be_packed() { return false;}
+            MPI_Datatype mpi_type() { return MPI_UNSIGNED_CHAR;}
+        };
+        //
+        template<> struct Type_MPI<unsigned short>
+        {
+            bool must_be_packed() { return false;}
+            MPI_Datatype mpi_type() { return MPI_UNSIGNED_SHORT;}
+        };
+        //
+        template<> struct Type_MPI<unsigned>
+        {
+            bool must_be_packed() { return false;}
+            MPI_Datatype mpi_type() { return MPI_UNSIGNED;}
+        };
+        //
+        template<> struct Type_MPI<unsigned long>
+        {
+            bool must_be_packed() { return false;}
+            MPI_Datatype mpi_type() { return MPI_UNSIGNED_LONG;}
+        };
+
+# else
+  const int any_tag    = -1;
+  const int any_source = -1;
+
+  enum error { success    = 0,
+               count,
+               rank,
+               tag,
+               buffer,
+               unknown  
+  };
+# endif
+}
+#endif
