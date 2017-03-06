@@ -26,6 +26,11 @@ namespace Parallel
             MPI_Comm_dup( impl.m_communicator, &m_communicator );
         }
         // -------------------------------------------------------------
+        Implementation( const Ext_Communicator& excom )
+        {
+            MPI_Comm_dup( excom, &m_communicator );
+        }
+        // -------------------------------------------------------------
         ~Implementation() 
         {
             MPI_Comm_free(&m_communicator);

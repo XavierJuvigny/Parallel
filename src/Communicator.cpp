@@ -29,6 +29,13 @@ namespace Parallel
         size = m_impl->getSize();        
     }
     // .................................................................
+    Communicator::Communicator( const Ext_Communicator& excom ) :
+        m_impl(new Communicator::Implementation(excom))
+    {
+        rank = m_impl->getRank();
+        size = m_impl->getSize();        
+    }    
+    // .................................................................
     Communicator::~Communicator()
     {
         delete m_impl;

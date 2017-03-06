@@ -10,11 +10,15 @@ namespace Parallel
         {}
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        
         Implementation( const Implementation& impl, int color, int key ) :
-                           m_pt_sendbuffer(nullptr)
+                            m_pt_sendbuffer(nullptr)
         {}
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        
         Implementation( const Implementation& impl ) :
-                           m_pt_sendbuffer(nullptr)
+                            m_pt_sendbuffer(nullptr)
+        {}
+        // .............................................................
+        Implementation( const Ext_Communicator& com ) :
+                            m_pt_sendbuffer(nullptr)
         {}
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        
         ~Implementation() {}

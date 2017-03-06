@@ -66,6 +66,14 @@ namespace Parallel
          */
         Communicator( const Communicator& com, int color, int key );
         /*!
+         *  \brief Convert a communicator coming from external library used
+         *         for Parallel library in Parallel communicator.
+         * 
+         *  \param com  The external communicator coming from library used
+         *              for implementation
+         */
+        Communicator( const Ext_Communicator& com );
+        /*!
          *   \brief Duplicate a communicator in a new instance.
          *
          *   This constructor is used to create a new communicator that has a new
