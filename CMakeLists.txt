@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(Parallel)
+PROJECT(Parallel CXX)
 
 # Version number
 SET (Parallel_VERSION_MAJOR 0)
@@ -30,6 +30,8 @@ IF (USE_MPI)
       COMMENT "Generating API documentation with Doxygen" VERBATIM
       )
   endif(DOXYGEN_FOUND)
+
+SET_PROPERTY(TARGET Parallel PROPERTY CXX_STANDARD 14)
 
 SET(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include  CACHE INTERNAL "${PROJECT_NAME}:Include Directories" FORCE)
 
