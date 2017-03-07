@@ -2,12 +2,29 @@
 #ifndef _PARALLEL_COMMUNICATOR_MPI_HPP_
 #  define _PARALLEL_COMMUNICATOR_MPI_HPP_
 # include <algorithm>
+# include <functional>
 # include <cassert>
+# include <iostream>
 # include <mpi.h>
 # include "Parallel/Status.hpp"
 # include "Parallel/Constantes.hpp"
 namespace Parallel
 {
+    namespace {
+    template<typename K> std::function<K(const K&, const K&)> reduce_functor;
+    template<typename K> void reduce_user_function ( void* x, void* y, int* length, 
+                                                     MPI_Datatype* tp )
+    {
+        K val;
+        K* ax = (K*)x;
+        K* ay = (K*)y;
+        for ( int i = 0; i < *length; ++i) {
+            val = reduce_functor<K>(ax[i], ay[i]);
+            ay[i] = val;
+        }
+    }
+    }
+    // .................................................................
     struct Communicator::Implementation
     {
         Implementation()
@@ -76,6 +93,28 @@ namespace Parallel
 #               endif                
             }
         }
+        //
+        template<typename K> Request isend( std::size_t nbItems, const K* sndbuff,
+                                         int dest, int tag ) const
+        {
+            MPI_Request m_req;
+            if ( Type_MPI<K>::must_be_packed() ) {
+                MPI_Isend(sndbuff, nbItems*sizeof(K), MPI_BYTE,
+                          dest, tag, m_communicator,  &m_req);
+            } else {
+                MPI_Isend(sndbuff, nbItems, Type_MPI<K>::mpi_type(), 
+                         dest, tag, m_communicator, &m_req );
+#               if defined(TRACE)
+                std::cerr << "A envoyé buffer à l'adresse "
+                          << (void*)sndbuff << " un message pour "
+                          << dest << " avec le tag " << tag
+                          << " contenant " << nbItems << " éléments"
+                          << std::endl;
+#               endif                
+            }
+            return Request(m_req);
+        }
+        
         // Réception par défaut :
         template<typename K> Status recv( std::size_t nbItems, K* rcvbuff,
                                         int sender, int tag ) const
@@ -135,6 +174,57 @@ namespace Parallel
                         root, m_communicator, &req );
             return req;
         }
+        // .............................................................        
+        void barrier() const
+        {
+            MPI_Barrier(m_communicator);
+        }
+        // .............................................................
+        template<typename K> void
+        reduce( std::size_t nbItems, const K* objs, K* res, Operation op,
+                int root )
+        {
+            assert(objs != nullptr);
+            if (root == getRank()) {
+                assert(res != nullptr);
+                if ( objs == res ) {
+                    MPI_Reduce( MPI_IN_PLACE, res, nbItems, 
+                                Type_MPI<K>::mpi_type(), op, root, m_communicator);
+                } else {
+                    MPI_Reduce( objs, res, nbItems, 
+                                Type_MPI<K>::mpi_type(), op, root, m_communicator);                    
+                }
+            }
+        }
+        // .............................................................
+        template<typename K, typename F> void
+        reduce( std::size_t nbItems, const K* objs, K* res, 
+                const F& fct, bool commute, int root )
+        {
+            assert(objs != nullptr);
+            reduce_functor<K> = std::function<K(const K&, const K&)>(fct);
+
+            MPI_Op op;
+            // On prend par défaut que l'opérateur commute.
+            // Il faudra sinon créer un opérateur exprès à passer
+            // avec la méthode précédente.
+            MPI_Op_create( reduce_user_function<K>, (commute ? 1 : 0), &op);
+            
+            if (root == getRank()) {
+                assert(res != nullptr);
+                if ( objs == res ) {
+                    MPI_Reduce( MPI_IN_PLACE, res, nbItems, 
+                                Type_MPI<K>::mpi_type(), op, root, m_communicator);
+                } else {
+                    MPI_Reduce( objs, res, nbItems, 
+                                Type_MPI<K>::mpi_type(), op, root, m_communicator);                    
+                }
+            } else
+                MPI_Reduce( objs, res, nbItems, 
+                            Type_MPI<K>::mpi_type(), op, root, m_communicator);                    
+            
+        }
+
     private:
         MPI_Comm m_communicator;
     };

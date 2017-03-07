@@ -16,8 +16,24 @@ namespace Parallel
                unknown    = MPI_ERR_UNKNOWN
   };
 
+  typedef MPI_Op Operation;
+
+  const Operation null = MPI_OP_NULL;
+  const Operation max  = MPI_MAX;
+  const Operation min  = MPI_MIN;
+  const Operation sum  = MPI_SUM;
+  const Operation prod = MPI_PROD;
+  const Operation logical_and = MPI_LAND;
+  const Operation binary_and  = MPI_BAND;
+  const Operation logical_or  = MPI_LOR;
+  const Operation binary_or   = MPI_BOR;
+  const Operation logical_xor = MPI_LXOR;
+  const Operation binary_xor  = MPI_BXOR;
+  const Operation minloc      = MPI_MINLOC;
+  const Operation maxloc      = MPI_MAXLOC;
+  const Operation replace     = MPI_REPLACE;
+
   typedef MPI_Comm Ext_Communicator; 
-  typedef MPI_Request Request;
   
   template<typename K> struct Type_MPI
   {
@@ -91,7 +107,25 @@ namespace Parallel
   const int undefined  = -1; /*!< Constant for undefined parameter */
 
   typedef int Ext_Communicator;
-  typedef int Request;
+  
+  typedef int Operation;
+  
+  enum operation {
+      null = 0,
+      max,
+      min,
+      sum,
+      prod,
+      logical_and,
+      binary_and,
+      logical_or,
+      binary_or,
+      logical_xor,
+      binary_xor,
+      minloc,
+      maxloc,
+      replace
+  };
   /*!
    * \enum error
    * \brief To manage error coming for parallel calls

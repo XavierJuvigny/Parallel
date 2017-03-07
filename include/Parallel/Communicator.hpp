@@ -8,9 +8,11 @@
  *    \date    03/03/2017
  */#ifndef _PARALLEL_COMMUNICATOR_HPP_
 # define _PARALLEL_COMMUNICATOR_HPP_
+# include <functional>
 # include <vector>
 # include <cstdlib>
 # include "Parallel/Status.hpp"
+# include "Parallel/Request.hpp"
 namespace Parallel
 {
     /*!   \class Communicator
@@ -138,6 +140,13 @@ namespace Parallel
          */
         template<typename K> void send( std::size_t nbObjs, const K* buff, int dest, int tag = 0) const;
         /*!
+         *    \brief Perform a non blocking send on an object to another process
+         *
+         */
+        template<typename K> Request isend( const K& obj, int dest, int tag = 0 ) const;
+        template<typename K> Request isend( const std::vector<K>& obj, int dest, int tag = 0 ) const;
+        template<typename K> Request isend( size_t nbItems, const K* obj, int dest, int tag = 0 ) const;
+        /*!
          *    \brief Perform a blocking receive to receive an object sended by another process
          * 
          *    This method receive an object \ref obj from a process \ref sender
@@ -153,7 +162,7 @@ namespace Parallel
         /*!
          *    \brief Perform a blocking receive for a vector of objects.
          * 
-         *    This method performs a receive operation to receive a vector of objects
+         *    This method performs a receive Operation to receive a vector of objects
          *    from \ref sender with ref \ref tag. This method performs a blocking receive.
          * 
          *    \param arr     The target vector where store the receiving data.
@@ -165,7 +174,7 @@ namespace Parallel
         /*!
          *    \brief Perform a blocking receive for a buffer of objects.
          * 
-         *    This method performs a receive operation to receive a buffer of objects
+         *    This method performs a receive Operation to receive a buffer of objects
          *    from \ref sender with ref \ref tag. This method performs a blocking receive.
          * 
          *    \param nbObjs  The number of objects to receive into the buffer.
@@ -245,6 +254,61 @@ namespace Parallel
          *    \param root  The rank of the root process
          */
         template<typename K> void bcast( std::size_t nbObjs, K* b_rcv, int root = 0 ) const;
+        /*!
+         *    \brief Blocks until all processor inside the communicator have reached this routine.
+         * 
+         *    The processus wait until all processes contained in the current communicator reached
+         *    this routine.
+         * 
+         */
+         void barrier() const;
+         /*!
+          *   \brief Reduce values on all processes within current communicator
+          * 
+          *   This method performs a global reduce Operation ( such as sum, max, logical AND, etc. ) across all members of the
+          *   current communicator. The reduction Operation must be here one of predefined list of Operations.
+          * 
+          *   This method combine the element provided by each process in the communicator, using the Operation op, and returns the
+          *   combined value for the root process.
+          */
+          template<typename K> void 
+          reduce( const K& obj, K& res, Operation op, int root = 0 ) const;          
+          template<typename K> void 
+          reduce( const K& obj, Operation op, int root = 0 ) const;
+          // -----------------------------------------------------------
+          template<typename K> void 
+          reduce( const std::vector<K>& obj, std::vector<K>& res, 
+                  Operation op, int root = 0 ) const;          
+          template<typename K> void 
+          reduce( const std::vector<K>& obj, Operation op, int root = 0 ) const;
+          // -----------------------------------------------------------        
+          template<typename K> void 
+          reduce( std::size_t nbObjs, const K* b_objs, K* b_res, 
+                  Operation op, int root = 0 ) const;
+          template<typename K> void 
+          reduce( std::size_t nbObjs, const K* b_objs, Operation op, 
+                  int root = 0 ) const;
+          // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+          template<typename K, typename Func> void 
+          reduce( const K& obj, K& res, const Func& op, bool commute = false, 
+                  int root = 0 ) const;
+          template<typename K, typename Func> void 
+          reduce( const K& obj, const Func& op, bool commute = false, int root = 0 ) const;
+          // -----------------------------------------------------------        
+          template<typename K, typename Func> void
+          reduce( const std::vector<K>& obj, std::vector<K>& res, 
+                  const Func& op, bool is_commutable, int root = 0 ) const;          
+          template<typename K, typename Func> void
+          reduce( const std::vector<K>& obj, const Func& op, bool is_commutable, 
+                  int root = 0 ) const;
+          // -----------------------------------------------------------                  
+          template<typename K> void reduce( std::size_t nbObjs, const K* b_objs, 
+                                            K* b_res, 
+                                            std::function<K(const K&, const K&)>& op,
+                                            int root = 0 ) const;
+          template<typename K> void reduce( std::size_t nbObjs, const K* b_objs, 
+                                            std::function<K(const K&, const K&)>& op, 
+                                            int root = 0 ) const;          
     private:
         struct Implementation;
         Implementation* m_impl;

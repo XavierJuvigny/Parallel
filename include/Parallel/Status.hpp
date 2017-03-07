@@ -11,6 +11,9 @@ namespace Parallel
     struct Status
     {
     public:
+      Status() = default;
+        Status( MPI_Status st ) : status(st)
+        {}
         MPI_Status status;
         template<typename K> int count() const { 
             int cnt; MPI_Get_count(&status, Type_MPI<K>::mpi_type(), &cnt);

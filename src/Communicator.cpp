@@ -41,4 +41,8 @@ namespace Parallel
         delete m_impl;
     }
     // =================================================================
+    void Communicator::barrier() const
+    {
+        m_impl->barrier();
+    }
 }

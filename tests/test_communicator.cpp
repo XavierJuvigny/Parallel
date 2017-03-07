@@ -1,5 +1,6 @@
 // Test des communications intra--communicateur
 # include <iostream>
+# include <cmath>
 # include "Parallel/Parallel.hpp"
 
 int main( int nargs, char* argv[] )
@@ -21,12 +22,29 @@ int main( int nargs, char* argv[] )
         com.send(array, (com.rank+1)%com.size);
         com.bcast(array);
     }
-    context.pout << "Tableau final :" << std::endl;
+    com.barrier();
+    std::cerr << "Tableau final :" << std::endl;
+    com.barrier();
     for ( auto& val : array ) {
         context.pout << val << " ";
-        std::cout << val << " ";
     }
     context.pout << std::endl;
-    std::cout << std::endl;
+    com.barrier();
+    double x = (com.rank+1)*1.5;
+    double y;
+    
+    com.reduce(x,y, [](const double& x, const double& y) -> double { return sin(x)+sin(y); }, true, 0);
+    
+    if ( com.rank == 0 )
+        context.pout << "Réduction : " << y << std::endl;
+    std::cerr << com.rank << " : Fin écriture" << std::endl;
+
+    std::vector<int> tab(com.size,0);
+    tab[com.rank] = 1;
+    Parallel::Request req = com.isend(tab, (com.rank+1)%com.size );
+    req.wait();
+    com.recv(array, (com.rank+com.size-1)%com.size );
+    for ( const auto& t : array ) context.pout << t << " ";
+    context.pout << std::endl;
     return EXIT_SUCCESS;
 }

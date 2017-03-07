@@ -36,6 +36,39 @@ namespace Parallel
         m_impl->send(arr.size(), arr.data(), dest, tag);
     }
     // .................................................................
+    template<typename K> Request
+    Communicator::isend( const K& obj, int dest, int tag ) const
+    {
+#       if defined(TRACE)
+        std::cerr << "Non blocking send of an object of size  " << sizeof(K)
+                  << " bytes to process " << dest << " with tag " << tag
+                  << std::endl;
+#       endif
+        return m_impl->isend( 1, &obj, dest, tag );
+    }
+    // .................................................................
+    template<typename K> Request
+    Communicator::isend( const std::vector<K>& obj, int dest, int tag ) const
+    {
+#       if defined(TRACE)
+        std::cerr << "Non blocking send of a vector of objects of size  " << obj.size()
+                  << " items to process " << dest << " with tag " << tag
+                  << std::endl;
+#       endif
+        return m_impl->isend( obj.size(), obj.data(), dest, tag );
+    }
+    // .................................................................
+    template<typename K> Request
+    Communicator::isend( std::size_t nbItems, const K* obj, int dest, int tag ) const
+    {
+#       if defined(TRACE)
+        std::cerr << "Non blocking send of a buffer of objects of size  " << nbItems*sizeof(K)
+                  << " bytes to process " << dest << " with tag " << tag
+                  << std::endl;
+#       endif
+        return m_impl->isend( nbItems, obj, dest, tag );
+    }    
+    // .................................................................
     template<typename K> Status 
     Communicator::recv( K& obj, int sender, int tag ) const
     {
@@ -64,7 +97,7 @@ namespace Parallel
                   << status.count<K>()
                   << std::endl;
 #       endif
-	std::vector<K>(status.count<K>()).swap(array);
+        std::vector<K>(status.count<K>()).swap(array);
         return m_impl->recv( array.size(), array.data(), sender, tag );
     }
     // =================================================================
@@ -106,5 +139,70 @@ namespace Parallel
     Communicator::bcast( std::size_t nbObjs, K* b_rcv, int root ) const
     {
         m_impl->broadcast(nbObjs, (const K*)nullptr, b_rcv, root);
+    }
+    // =================================================================
+    template<typename K> void
+    Communicator::reduce( const K& obj, K& res, Operation op, int root ) const
+    {
+        m_impl->reduce(1, &obj, &res, op, root );
+    }
+    // .................................................................
+    template<typename K> void
+    Communicator::reduce( const K& obj, Operation op, int root ) const
+    {
+        assert(root != rank);
+        m_impl->reduce(1, &obj, nullptr, op, root );
+    }
+    // _________________________________________________________________
+    template<typename K, typename Func> void
+    Communicator::reduce( const K& obj, K& res, const Func& op, 
+                          bool commute, int root ) const
+    {
+        m_impl->reduce(1, &obj, &res, op, commute, root );
+    }
+    // .................................................................
+    template<typename K, typename Func> void
+    Communicator::reduce( const K& obj, const Func& op, bool commute, 
+                          int root ) const
+    {
+        assert(root != rank);
+        m_impl->reduce(1, &obj, nullptr, op, commute, root );
+    }
+    // _________________________________________________________________
+    template<typename K> void
+    Communicator::reduce( const std::vector<K>& obj, std::vector<K>& res,
+                          Operation op, int root ) const
+    {
+        if ( res.size() < obj.data() ) {
+            std::vector<K>(obj.size()).swap(res);
+        }
+        m_impl->reduce(obj.size(), obj.data(), res.data(), op, root );        
+    }
+    // .................................................................
+    template<typename K> void
+    Communicator::reduce( const std::vector<K>& obj, Operation op, int root ) const
+    {
+        assert(root != rank );
+        m_impl->reduce(obj.size(), obj.data(), nullptr, op, root );
+    }
+    // _________________________________________________________________
+    template<typename K, typename Func> void
+    Communicator::reduce( const std::vector<K>& obj, std::vector<K>& res,
+                          const Func& op, bool commute, int root) const
+    {
+        if ( res.size() < obj.data() ) {
+            std::vector<K>(obj.size()).swap(res);
+        }
+        m_impl->reduce(obj.size(), obj.data(), res.data(), op, 
+                       commute, root );
+    }
+    // .................................................................
+    template<typename K, typename Func> void
+    Communicator::reduce( const std::vector<K>& obj, const Func& op,
+                          bool commute, int root ) const
+    {
+        assert(root != rank);
+        m_impl->reduce(obj.size(), obj.data(), nullptr, op, 
+                       commute, root );
     }
 }

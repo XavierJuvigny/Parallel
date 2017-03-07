@@ -1,5 +1,6 @@
 // Stub for parallel library ( to work on standalone computer by example )
 # include <algorithm>
+# include <iostream>
 # include "Parallel/Status.hpp"
 # include "Parallel/Constantes.hpp"
 namespace Parallel
@@ -33,7 +34,8 @@ namespace Parallel
             if (dest != 0) return error::rank;
             if ( sndbuff == nullptr ) return error::buffer;
             m_nbItems = nbItems;
-            m_pt_sendbuffer = static_cast<void*>(sndbuff);
+            m_pt_sendbuffer = new K[nbItems];
+            std::copy_n(sndbuff, nbItems, (K*)(m_pt_sendbuffer));
             return error::success;
         }
         // .............................................................
@@ -45,13 +47,15 @@ namespace Parallel
             }
             Status stat;
             if ( m_nbItems < nbItems ) {
-                stat = Status{.m_count = m_nbItems, .m_tag = 0, .m_error = error::count};
+                stat = Status{.m_count = int(m_nbItems), .m_tag = 0, .m_error = error::count};
                 nbItems = m_nbItems;
             }
             else 
-                stat = Status{.m_count = nbItems, .m_tag = tag, .m_error = error::success};
-            std::copy_n( static_cast<const K*>(m_pt_sendbuffer), 
-                         nbItems, rcvbuff );
+                stat = Status{.m_count = int(nbItems), .m_tag = tag, .m_error = error::success};
+            if ( m_pt_sendbuffer != rcvbuff )
+                std::copy_n( static_cast<const K*>(m_pt_sendbuffer), 
+                             nbItems, rcvbuff );
+            delete [] (K*)m_pt_sendbuffer;
             m_pt_sendbuffer = nullptr;
             return stat;
         }
@@ -66,7 +70,7 @@ namespace Parallel
                                              int root ) const
         {
             if ( bufsnd != bufrcv )
-                std::copy_n( bufrcv, nbItems, bufsnd );
+                std::copy_n( bufsnd, nbItems, bufrcv );
         }
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        
         template<typename K> Request ibroadcast( std::size_t nbItems, 
@@ -74,15 +78,15 @@ namespace Parallel
                                                  int root ) const
         {
             if ( bufsnd != bufrcv )
-                std::copy_n( bufrcv, nbItems, bufsnd );
+                std::copy_n( bufsnd, nbItems, bufrcv     );
             return Request(1);
         }
         // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
         void barrier() const {}        
         // .............................................................
     private:
-        std::size_t m_nbItems;
-        const void* m_pt_sendbuffer;        
+        mutable std::size_t m_nbItems;
+        mutable const void* m_pt_sendbuffer;        
     };
     // -----------------------------------------------------------------
     

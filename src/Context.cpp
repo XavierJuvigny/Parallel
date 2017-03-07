@@ -78,12 +78,16 @@ Context::~Context()
 Context::Context(int& nargc, char* argv[], bool isMultithreaded ) :
     m_provided((isMultithreaded ? Context::thread_support::Multiple :
                                   Context::thread_support::Single))
-{}
+{
+    pout.open("Output.txt");
+}
 //
 Context::Context(int& nargc, char* argv[], 
                  Context::thread_support thread_level_support) :
     m_provided(thread_level_support)
-{}
+{
+    pout.open("Output.txt");
+}
 //
 Context::~Context()
 {}
