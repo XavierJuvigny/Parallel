@@ -2,10 +2,22 @@
 # include <iostream>
 # include <cmath>
 # include "Parallel/Parallel.hpp"
+# include "Parallel/LogToFile.hpp"
 
 int main( int nargs, char* argv[] )
 {
     Parallel::Context context(nargs, argv);
+    Parallel::Logger& log = Parallel::Context::logger;
+    int listeners = Parallel::Logger::Listener::Listen_for_assertion +
+                    Parallel::Logger::Listener::Listen_for_error +
+                    Parallel::Logger::Listener::Listen_for_warning +
+                    Parallel::Logger::Listener::Listen_for_information;
+    log.subscribe(new Parallel::LogToFile("Output",listeners));
+    if ( nargs > 1 ) {
+      if ( std::string(argv[1]) == std::string("trace") )
+        log.subscribe(new Parallel::LogToFile("Trace",Parallel::Logger::Listener::Listen_for_trace));
+    }
+      
     // Par défaut, communicateur global :
     Parallel::Communicator com;
     std::vector<int> array;
@@ -23,28 +35,28 @@ int main( int nargs, char* argv[] )
         com.bcast(array);
     }
     com.barrier();
-    std::cerr << "Tableau final :" << std::endl;
-    com.barrier();
+    log << "Final array : ";
     for ( auto& val : array ) {
-        context.pout << val << " ";
+      log << val << " ";
     }
-    context.pout << std::endl;
+    log << "\n";
     com.barrier();
     double x = (com.rank+1)*1.5;
     double y;
-    
     com.reduce(x,y, [](const double& x, const double& y) -> double { return sin(x)+sin(y); }, true, 0);
     
     if ( com.rank == 0 )
-        context.pout << "Réduction : " << y << std::endl;
-    std::cerr << com.rank << " : Fin écriture" << std::endl;
+      log << "Reduction : " << y << "\n";
 
+    Parallel::Request rreq = com.irecv(array, (com.rank+com.size-1)%com.size );
     std::vector<int> tab(com.size,0);
     tab[com.rank] = 1;
-    Parallel::Request req = com.isend(tab, (com.rank+1)%com.size );
-    req.wait();
-    com.recv(array, (com.rank+com.size-1)%com.size );
-    for ( const auto& t : array ) context.pout << t << " ";
-    context.pout << std::endl;
+    Parallel::Request sreq = com.isend(tab, (com.rank+1)%com.size );
+    sreq.wait();
+    rreq.wait();
+    log << "isend result array : ";
+    for ( const auto& t : array )
+      log << t << " ";
+    log << "\n";
     return EXIT_SUCCESS;
 }
