@@ -179,11 +179,11 @@ int main( int nargs, char* argv[] )
     int JBlock = globCom.rank / p;
     std::size_t begRow = IBlock*dim_block;
     std::size_t begCol = JBlock*dim_block;
-    LogInformation << "Number of blocks per direction " << p << "\n"
-                   << "Dimension of each block : " << dim_block << "\n"
-                   << "Indice of C block : " << IBlock << " : " << JBlock << "\n"
+    LogInformation << "Number of blocks per direction " << p << std::endl
+                   << "Dimension of each block : " << dim_block << std::endl
+                   << "Indice of C block : " << IBlock << " : " << JBlock << std::endl
                    << "Beginning of the row and column indices : " << begRow
-                   << ", " << begCol << "\n";
+                   << ", " << begCol << std::endl;
     Parallel::Communicator rowCom( globCom, IBlock, JBlock );
     Parallel::Communicator colCom( globCom, JBlock, IBlock );
     assert( rowCom.size == p );
@@ -208,7 +208,7 @@ int main( int nargs, char* argv[] )
     std::tie(std::ignore,vA,uB,std::ignore) = computeTensorVectors<double>( dim,dim,0, 0 );
     double vAdotuB = dotProduct( vA, uB );
     if ( verifyProdMatMat( dim_block, vAdotuB, uA, vB, C ) ) {
-      LogInformation << "Test passed." << "\n";
+      LogInformation << "Test passed." << std::endl;
     }
     else {
       LogError << "Test failed !\n";

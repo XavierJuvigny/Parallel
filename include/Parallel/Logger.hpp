@@ -51,6 +51,7 @@ namespace Parallel
     
     Logger(const Logger& log) = delete;
     Logger( Logger&& log ) = delete;
+    ~Logger() { flush(); }
 
     Logger& operator = ( const Logger& ) = delete;
     Logger& operator = ( Logger&& ) = delete;
@@ -62,7 +63,13 @@ namespace Parallel
     {
       m_current_mode = mode;
       return *this;
-    }    
+    }
+    Logger& flush()
+    {
+      for ( auto listener : m_listeners )
+        listener->report().flush();
+      return *this;
+    }
     // ..........................................................................
     template<typename K> inline Parallel::Logger&
     operator << ( const K& obj )
@@ -70,7 +77,6 @@ namespace Parallel
       for ( auto listener : m_listeners )
         if ( listener->toReport(m_current_mode) ) {
           listener->report() << obj;
-          listener->report().flush();
         }
       return *this;
     }
@@ -86,11 +92,14 @@ namespace Parallel
     };
     
     int m_rank;
+    typedef Logger& (*Logger_manip)(Logger &);
+    Logger& operator<<(Logger_manip manip) { return manip(*this); }
   private:
     int m_current_mode;
     std::list<Listener*> m_listeners;
   };
 
+  
 # define Mode (cond) \
   ((cond) ? Parallel::Logger::ASSERTION : Parallel::Logger::NOTHING)
 
@@ -120,6 +129,8 @@ namespace Parallel
 
 }
 
-
+namespace std {
+  inline Parallel::Logger& endl(Parallel::Logger & out) { out << "\n"; out.flush(); return out; }
+}
 
 #endif

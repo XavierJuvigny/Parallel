@@ -116,7 +116,7 @@ namespace Parallel
             }
 #           if defined(DEBUG)
             LogTrace << "Asynchrone send for an object to " << dest << " with tag "
-                     << tag << "\n";
+                     << tag << std::endl;
 #           endif
             return Request(m_req);            
           }
@@ -125,7 +125,7 @@ namespace Parallel
           {
 #           if defined(DEBUG)            
             LogTrace << "Receive an object from " << sender << " with tag "
-                     << tag << "\n";
+                     << tag << std::endl;
 #           endif
             Status status;
             if ( Type_MPI<K>::must_be_packed() ) {
@@ -135,7 +135,7 @@ namespace Parallel
               MPI_Recv(&rcvobj, 1, Type_MPI<K>::mpi_type(), sender, tag, com, &status.status );
             }
 #           if defined(DEBUG)            
-            LogTrace << "OK, receive done !" << "\n";
+            LogTrace << "OK, receive done !" << std::endl;
 #           endif
             return status;
           }
@@ -144,7 +144,7 @@ namespace Parallel
           {
 #           if defined(DEBUG)            
             LogTrace << "Asynchronous receive of an object from " << sender << " with tag "
-                     << tag << "\n";
+                     << tag << std::endl;
 #           endif
             MPI_Request req;
             if ( Type_MPI<K>::must_be_packed() ) {
@@ -158,7 +158,7 @@ namespace Parallel
           static void broadcast( const MPI_Comm& com, const K* obj_snd, K& obj_rcv, int root )
           {
 #           if defined(DEBUG)            
-            LogTrace << "Broadcast of one object with root = " << root << "\n";
+            LogTrace << "Broadcast of one object with root = " << root << std::endl;
 #           endif
             int rank;
             MPI_Comm_rank(com, &rank);
@@ -177,14 +177,14 @@ namespace Parallel
                               const Operation& op, int root ) {
 #           if defined(DEBUG)            
             LogTrace << "Reduce operation on one object with root = " << root
-                     << " and store at adress " << (void*)glob << "\n";
+                     << " and store at adress " << (void*)glob << std::endl;
             int rank;
             MPI_Comm_rank(com, &rank);
             assert( (rank!=root) || (glob != nullptr) );
 #           endif
             MPI_Reduce( &loc, glob, 1, Type_MPI<K>::mpi_type(), op, root, com );
 #           if defined(DEBUG)            
-            LogTrace << "End of reduction" << "\n";
+            LogTrace << "End of reduction" << std::endl;
 #           endif
           }
         };      
@@ -204,7 +204,7 @@ namespace Parallel
                     << (void*)sndbuff << " un message pour "
                     << dest << " avec le tag " << tag
                     << " contenant " << nbItems << " éléments"
-                    << "\n";
+                    << std::endl;
 #               endif                
         }
       }
@@ -229,7 +229,7 @@ namespace Parallel
                     << (void*)sndbuff << " un message pour "
                     << dest << " avec le tag " << tag
                     << " contenant " << nbItems << " éléments"
-                    << "\n";
+                    << std::endl;
 #         endif                
         }
         return Request(m_req);
@@ -254,7 +254,7 @@ namespace Parallel
                           << (void*)rcvbuff << " un message provenant de "
                           << sender << " avec le tag " << tag
                           << " contenant " << nbItems << " éléments"
-                          << "\n";
+                          << std::endl;
 #               endif
                 MPI_Recv(rcvbuff, nbItems, Type_MPI<K>::mpi_type(),
                          sender, tag, m_communicator, &status.status );
@@ -283,7 +283,7 @@ namespace Parallel
                           << (void*)rcvbuff << " un message non bloquant provenant de "
                           << sender << " avec le tag " << tag
                           << " contenant " << nbItems << " éléments"
-                          << "\n";
+                          << std::endl;
 #               endif
                 MPI_Irecv(rcvbuff, nbItems, Type_MPI<K>::mpi_type(),
                          sender, tag, m_communicator, &req );
@@ -304,7 +304,7 @@ namespace Parallel
 #           if defined(TRACE)
         std::cerr << "Broadcast de " << nbItems << " objects at adress "
                   << (void*)bufsnd << " to adress " << (void*)bufrcv
-                  << " with root = " << root << "\n";
+                  << " with root = " << root << std::endl;
 #           endif
         assert( bufrcv != nullptr );
         if (root == getRank()) {
@@ -413,7 +413,7 @@ namespace Parallel
         snd = (std::vector<typename K::value_type,typename K::allocator_type>*)&snd_arr;
       } else {
 #       if defined(DEBUG)            
-        LogTrace << "Copy container data inside a vector" << "\n";
+        LogTrace << "Copy container data inside a vector" << std::endl;
 #       endif        
         snd = new std::vector<typename K::value_type,typename K::allocator_type>(snd_arr.size());
         std::copy(snd_arr.begin(), snd_arr.end(), snd->begin());
@@ -429,12 +429,12 @@ namespace Parallel
       }
 #     if defined(DEBUG)            
       LogTrace << "Send a container with " << snd->size() << " elements to " << dest
-               << " with tag " << tag << "\n";
+               << " with tag " << tag << std::endl;
 #     endif
       if ( !std::is_base_of<std::vector<typename K::value_type,
                                        typename K::allocator_type>,K>::value ) {
 #       if defined(DEBUG)            
-        LogTrace << "Delete temporary vector" << "\n";
+        LogTrace << "Delete temporary vector" << std::endl;
 #       endif        
         delete snd;
       }
@@ -448,7 +448,7 @@ namespace Parallel
         snd = (std::vector<typename K::value_type,typename K::allocator_type>*)&snd_obj;
       } else {
 #       if defined(DEBUG)            
-        LogTrace << "Copy container data inside a vector" << "\n";
+        LogTrace << "Copy container data inside a vector" << std::endl;
 #       endif        
         snd = new std::vector<typename K::value_type,typename K::allocator_type>(snd_obj.size());
         std::copy(snd_obj.begin(), snd_obj.end(), snd->begin());
@@ -464,13 +464,13 @@ namespace Parallel
       }
 #     if defined(DEBUG)            
       LogTrace << "Asynchrone send for a container with " << snd_obj.size() << " elements  to "
-               << dest << " with tag " << tag << "\n";
+               << dest << " with tag " << tag << std::endl;
 #     endif        
       
       if ( !std::is_base_of<std::vector<typename K::value_type,
                                         typename K::allocator_type>,K>::value ) {
 #       if defined(DEBUG)            
-        LogTrace << "Delete temporary vector" << "\n";
+        LogTrace << "Delete temporary vector" << std::endl;
 #       endif        
         delete snd;
       }
@@ -489,19 +489,19 @@ namespace Parallel
         rcv = (std::vector<typename K::value_type,typename K::allocator_type>*)&rcvobj;
         if ( rcv->size() < szMsg ) {
 #         if defined(DEBUG)            
-          LogTrace << "Realloc rcv vector to match receive size message" << "\n";
+          LogTrace << "Realloc rcv vector to match receive size message" << std::endl;
 #         endif
           std::vector<typename K::value_type,typename K::allocator_type>(szMsg).swap(*rcv);
         }
       } else {
 #       if defined(DEBUG)
-        LogTrace << "Create container data to receive" << "\n";
+        LogTrace << "Create container data to receive" << std::endl;
 #       endif
         rcv = new std::vector<typename K::value_type,typename K::allocator_type>(szMsg);
       }
 #     if defined(DEBUG)
       LogTrace << "Receive a container with " << rcv->size() << " elements  from " <<sender
-               << " with tag " << tag << "\n";
+               << " with tag " << tag << std::endl;
 #     endif
       if ( Type_MPI<typename K::value_type>::must_be_packed() ) {
         MPI_Recv(rcv->data(), rcv->size()*sizeof(typename K::value_type), MPI_BYTE,
@@ -511,12 +511,12 @@ namespace Parallel
                  sender, tag, com, &status );
       }
 #     if defined(DEBUG)      
-      LogTrace << "OK, receive done !" << "\n";
+      LogTrace << "OK, receive done !" << std::endl;
 #     endif      
       if ( !std::is_base_of<std::vector<typename K::value_type,
                                         typename K::allocator_type>,K>::value ) {
 #       if defined(DEBUG)      
-        LogTrace << "Copy temporary vector inside the container passed as parameter." << "\n";
+        LogTrace << "Copy temporary vector inside the container passed as parameter." << std::endl;
 #       endif        
         rcvobj = K(rcv->begin(),rcv->end());
         delete rcv;
@@ -528,7 +528,7 @@ namespace Parallel
     {
 #     if defined(DEBUG)
       LogTrace << "Asynchronous receive of a container with " << rcvobj.size()
-               << " elements from " << sender << " with tag " << tag << "\n";
+               << " elements from " << sender << " with tag " << tag << std::endl;
 #     endif
       std::vector<typename K::value_type,typename K::allocator_type>* rcv;
       if ( std::is_base_of<std::vector<typename K::value_type,
@@ -536,7 +536,7 @@ namespace Parallel
         rcv = (std::vector<typename K::value_type,typename K::allocator_type>*)&rcvobj;
       } else {
 #       if defined(DEBUG)
-        LogTrace << "Create container data to receive" << "\n";
+        LogTrace << "Create container data to receive" << std::endl;
 #       endif
         rcv = new std::vector<typename K::value_type,typename K::allocator_type>(rcvobj.size());
       }
@@ -553,7 +553,7 @@ namespace Parallel
       if ( !std::is_base_of<std::vector<typename K::value_type,
                                        typename K::allocator_type>,K>::value ) {
 #       if defined(DEBUG)
-        LogTrace << "Copy temporary vector inside the container passed as parameter." << "\n";
+        LogTrace << "Copy temporary vector inside the container passed as parameter." << std::endl;
 #       endif        
         std::copy(rcvobj.begin(), rcvobj.end(), rcv->begin());
         delete rcv;
@@ -567,7 +567,7 @@ namespace Parallel
       std::size_t szMsg = ( obj_snd != nullptr ? obj_snd->size() : obj_rcv.size() );
 #     if defined(DEBUG)
       LogTrace << "Broadcast of a container with " << szMsg
-               << " elements with root = " << root << "\n";
+               << " elements with root = " << root << std::endl;
 #     endif      
       std::vector<typename K::value_type,typename K::allocator_type>* rcv;
       if ( std::is_base_of<std::vector<typename K::value_type,
@@ -575,14 +575,14 @@ namespace Parallel
         rcv = (std::vector<typename K::value_type,typename K::allocator_type>*)&obj_rcv;
         if (szMsg > rcv->size()) {
 #         if defined(DEBUG)
-          LogTrace << "Realloc rcv vector to match broadcast size message" << "\n";
+          LogTrace << "Realloc rcv vector to match broadcast size message" << std::endl;
 #         endif
           std::vector<typename K::value_type,
                       typename K::allocator_type>(obj_snd->size()).swap(*rcv);            
         }
       } else {
 #       if defined(DEBUG)
-        LogTrace << "Create container data to receive" << "\n";
+        LogTrace << "Create container data to receive" << std::endl;
 #       endif
         rcv = new std::vector<typename K::value_type,typename K::allocator_type>(szMsg);
       }
@@ -600,12 +600,12 @@ namespace Parallel
                   root, com );
       }
 #     if defined(DEBUG)
-      LogTrace << "End of broadcasting" << "\n";
+      LogTrace << "End of broadcasting" << std::endl;
 #     endif      
       if ( !std::is_base_of<std::vector<typename K::value_type,
                                         typename K::allocator_type>,K>::value ) {
 #       if defined(DEBUG)
-        LogTrace << "Copy temporary vector inside the container passed as parameter." << "\n";
+        LogTrace << "Copy temporary vector inside the container passed as parameter." << std::endl;
 #       endif
         std::copy(obj_rcv.begin(), obj_rcv.end(), rcv->begin());
         delete rcv;
@@ -620,7 +620,7 @@ namespace Parallel
       MPI_Comm_rank(com, &rank);
 #     if defined(DEBUG)
       LogTrace << "Reduce operation on one container with " << szMsg
-               << " elements with root = " << root << "\n";
+               << " elements with root = " << root << std::endl;
 #     endif
       std::vector<typename K::value_type,typename K::allocator_type>* glb;
       std::vector<typename K::value_type,typename K::allocator_type>* lc;
@@ -631,7 +631,7 @@ namespace Parallel
         if ( glb != nullptr ) {
           if (szMsg > glb->size()) {
 #           if defined(DEBUG)
-            LogTrace << "Realloc glb vector to match reduce size message" << "\n";
+            LogTrace << "Realloc glb vector to match reduce size message" << std::endl;
 #           endif
             std::vector<typename K::value_type,
                         typename K::allocator_type>(szMsg).swap(*glb);
@@ -639,7 +639,7 @@ namespace Parallel
         }
       } else {
 #       if defined(DEBUG)
-        LogTrace << "Create container data to compute" << "\n";
+        LogTrace << "Create container data to compute" << std::endl;
 #       endif
         if ( rank == root )
           glb = new std::vector<typename K::value_type,typename K::allocator_type>(szMsg);
@@ -655,7 +655,7 @@ namespace Parallel
         MPI_Reduce( lc->data(), nullptr, szMsg, Type_MPI<typename K::value_type>::mpi_type(),
                     op, root, com );
 #     if defined(DEBUG)
-      LogTrace << "End of reduction" << "\n";
+      LogTrace << "End of reduction" << std::endl;
 #     endif
       if ( rank == root )
         if ( !std::is_base_of<std::vector<typename K::value_type,

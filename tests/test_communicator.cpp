@@ -48,18 +48,18 @@ int main( int nargs, char* argv[] )
         com.bcast(array);
     }
     com.barrier();
-    log << "Final array : ";
+    LogInformation << "Final array : ";
     for ( auto& val : array ) {
       log << val << " ";
     }
-    log << "\n";
+    log << std::endl;
     com.barrier();
     double x = (com.rank+1)*1.5;
     double y;
     com.reduce(x,y, [](const double& x, const double& y) -> double { return sin(x)+sin(y); }, true, 0);
     
     if ( com.rank == 0 )
-      log << "Reduction : " << y << "\n";
+      LogInformation << "Reduction : " << y << std::endl;
 
     Parallel::Request rreq = com.irecv(array, (com.rank+com.size-1)%com.size );
     std::vector<int> tab(com.size,0);
@@ -67,9 +67,9 @@ int main( int nargs, char* argv[] )
     Parallel::Request sreq = com.isend(tab, (com.rank+1)%com.size );
     sreq.wait();
     rreq.wait();
-    log << "isend result array : ";
+    LogInformation << "isend result array : ";
     for ( const auto& t : array )
       log << t << " ";
-    log << "\n";
+    log << std::endl;
     return EXIT_SUCCESS;
 }
