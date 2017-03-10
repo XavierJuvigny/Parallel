@@ -11,19 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*!
- *    \brief Operator for reduce and scan operations.
- */
-#ifndef _PARALLEL_OPERATOR_HPP_
-# define _PARALLEL_OPERATOR_HPP_
+#ifndef _PARALLEL_CHRONO_HPP_
+# define _PARALLEL_CHRONO_HPP_
 
 namespace Parallel
 {
-    template<typename K> class Operator
+    class TimerLog
     {
-    private:
-        struct Implementation;
-        Implementation* m_impl;
+    public:
+
     };
 }
 
